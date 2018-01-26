@@ -1,3 +1,9 @@
+#  TODO:
+#  - https://github.com/firehol/netdata
+#  - npm i redis
+#  - npm i mongo
+#  - https://github.com/mongo-express/mongo-express
+#
 # treba videti kako pokrenuti node aplikaciju preko package.json-a
 ---
 - hosts: all
