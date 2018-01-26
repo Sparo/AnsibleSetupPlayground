@@ -6,7 +6,7 @@
   vars:
     url: testing.dev
     document_root: /var/www
-    nodejs_setup: setup_9.x
+    nodejs_setup_version: setup_9.x
   tasks:
     - name: Update APT Cache
       apt: update_cache=yes
@@ -19,14 +19,12 @@
         - curl
         - git
 
-    - name: Download NodeJs setup ...
-      get_url:
-        url: https://deb.nodesource.com/{{nodejs_setup}}
-        dest: "."
-        mode: 0755
+    - name: Download and run NodeJs setup ...
+      shell: curl -sL https://deb.nodesource.com/{{nodejs_setup_version}} | sudo -E bash -
+      register: result
 
-    - name: Run NodeJs setup ...
-      shell: "{{nodejs_setup}} | sudo -E bash -"
+    - debug:
+        var: result
 
     - name: Install NodeJs ...
       apt: name=nodejs state=present
@@ -36,24 +34,29 @@
       with_items:
         - pm2
 
-    - name: Copy accross virtual hosts
+    - name: Copy accross virtual hosts ...
       template:
         src=templates/nginx.template.j2
         dest=/etc/nginx/sites-available/{{url}}
 
-    - name: Enable site
+    - name: Enable site ...
       file:
         src=/etc/nginx/sites-available/{{url}}
         dest=/etc/nginx/sites-enabled/{{url}}
         state=link
 
-    - name: Remove default config link
+    - name: Remove default config link ...
       file:
         path=/etc/nginx/sites-enabled/default
         state=absent
 
-    - name: Run app...
-      command: pm2 restart server.js
+    - name: Kill all PM2 Apps ...
+      command: pm2 kill
+      args:
+        chdir: "{{document_root}}"
+
+    - name: Run app ...
+      command: pm2 start server.js --name=FeApp
       args:
         chdir: "{{document_root}}"
 
