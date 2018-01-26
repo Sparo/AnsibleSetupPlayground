@@ -1,0 +1,61 @@
+# treba videti kako pokrenuti node aplikaciju preko package.json-a
+---
+- hosts: all
+  become: true
+  remote_user: vagrant
+  vars:
+    url: testing.dev
+    document_root: /var/www
+    nodejs_setup: setup_9.x
+  tasks:
+    - name: Update APT Cache
+      apt: update_cache=yes
+
+    - name: Install Essentials, Nginx, Curl, Git ...
+      apt: name={{item}} state=present
+      with_items:
+        - build-essential
+        - nginx
+        - curl
+        - git
+
+    - name: Download NodeJs setup ...
+      get_url:
+        url: https://deb.nodesource.com/{{nodejs_setup}}
+        dest: "."
+        mode: 0755
+
+    - name: Run NodeJs setup ...
+      shell: "{{nodejs_setup}} | sudo -E bash -"
+
+    - name: Install NodeJs ...
+      apt: name=nodejs state=present
+
+    - name: Install global NPM packages ...
+      npm: name={{item}} global=yes
+      with_items:
+        - pm2
+
+    - name: Copy accross virtual hosts
+      template:
+        src=templates/nginx.template.j2
+        dest=/etc/nginx/sites-available/{{url}}
+
+    - name: Enable site
+      file:
+        src=/etc/nginx/sites-available/{{url}}
+        dest=/etc/nginx/sites-enabled/{{url}}
+        state=link
+
+    - name: Remove default config link
+      file:
+        path=/etc/nginx/sites-enabled/default
+        state=absent
+
+    - name: Run app...
+      command: pm2 restart server.js
+      args:
+        chdir: "{{document_root}}"
+
+    - name: Restart nginx
+      service: name=nginx state=restarted
