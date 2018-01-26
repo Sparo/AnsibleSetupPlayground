@@ -18,6 +18,7 @@
         - nginx
         - curl
         - git
+        - htop
 
     - name: Download and run NodeJs setup ...
       shell: curl -sL https://deb.nodesource.com/{{nodejs_setup_version}} | sudo -E bash -
