@@ -8,3 +8,4 @@ which is going to setup NginX, Node.js, desired modules for Node and setup auto 
 deploy of the app.
 
 After initial config and setup, developer should just work on it's app...
+
