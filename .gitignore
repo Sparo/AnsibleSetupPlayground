@@ -3,3 +3,4 @@ html/
 Vagrantfile
 *.log
 repo/
+*.retry
