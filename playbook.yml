@@ -10,7 +10,7 @@
   become: true
   remote_user: vagrant
   vars:
-    url: testing.dev
+    url: solartech.dev
     document_root: /var/www
     nodejs_setup_version: setup_9.x
   tasks:
