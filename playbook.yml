@@ -6,11 +6,11 @@
 #
 # treba videti kako pokrenuti node aplikaciju preko package.json-a
 ---
-- hosts: all
+- hosts: dev
   become: true
-  remote_user: vagrant
+  remote_user: root
   vars:
-    url: solartech.dev
+    url: solartech.rs
     document_root: /var/www
     nodejs_setup_version: setup_9.x
   tasks:
@@ -28,10 +28,6 @@
 
     - name: Download and run NodeJs setup ...
       shell: curl -sL https://deb.nodesource.com/{{nodejs_setup_version}} | sudo -E bash -
-      register: result
-
-    - debug:
-        var: result
 
     - name: Install NodeJs ...
       apt: name=nodejs state=present
@@ -41,31 +37,53 @@
       with_items:
         - pm2
 
-    - name: Copy accross virtual hosts ...
-      template:
-        src=templates/nginx.template.j2
-        dest=/etc/nginx/sites-available/{{url}}
+    # - name: Copy accross virtual hosts ...
+    #   template:
+    #     src=templates/nginx.template.j2
+    #     dest=/etc/nginx/sites-available/{{url}}
 
-    - name: Enable site ...
+    - name: Copy accross virtual hosts mms.solartech.rs ...
+      template:
+        src=templates/mms.solartech.rs.nginx.config.j2
+        dest=/etc/nginx/sites-available/mms.solartech.rs
+
+    - name: Copy accross virtual hosts api.mms.solartech.rs ...
+      template:
+        src=templates/api.mms.solartech.rs.nginx.config.j2
+        dest=/etc/nginx/sites-available/api.mms.solartech.rs
+
+    # - name: Enable site ...
+    #   file:
+    #     src=/etc/nginx/sites-available/{{url}}
+    #     dest=/etc/nginx/sites-enabled/{{url}}
+    #     state=link
+
+    - name: Enable site mms.solartech.rs...
       file:
-        src=/etc/nginx/sites-available/{{url}}
-        dest=/etc/nginx/sites-enabled/{{url}}
+        src=/etc/nginx/sites-available/mms.solartech.rs
+        dest=/etc/nginx/sites-enabled/mms.solartech.rs
         state=link
 
-    - name: Remove default config link ...
+    - name: Enable site api.mms.solartech.rs...
       file:
-        path=/etc/nginx/sites-enabled/default
-        state=absent
+        src=/etc/nginx/sites-available/api.mms.solartech.rs
+        dest=/etc/nginx/sites-enabled/api.mms.solartech.rs
+        state=link
 
-    - name: Kill all PM2 Apps ...
-      command: pm2 kill
-      args:
-        chdir: "{{document_root}}"
+    # - name: Remove default config link ...
+    #   file:
+    #     path=/etc/nginx/sites-enabled/default
+    #     state=absent
 
-    - name: Run app ...
-      command: pm2 start server.js --name=FeApp
-      args:
-        chdir: "{{document_root}}"
+    # - name: Kill all PM2 Apps ...
+    #   command: pm2 kill
+    #   args:
+    #     chdir: "{{document_root}}"
+
+    # - name: Run app ...
+    #   command: pm2 start server.js --name=FeApp
+    #   args:
+    #     chdir: "{{document_root}}"
 
     - name: Restart nginx
       service: name=nginx state=restarted
