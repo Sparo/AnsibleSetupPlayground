@@ -1,6 +1,0 @@
-html/
-.vagrant/
-Vagrantfile
-*.log
-repo/
-*.retry
