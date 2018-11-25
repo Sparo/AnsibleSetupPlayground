@@ -1,6 +1,8 @@
 [vagrant]
-192.168.33.10
+127.0.0.1
 
-
-[webservers]
-209.182.232.7
+[vagrant:vars]
+ansible_ssh_user=vagrant
+ansible_ssh_pass={{ vagrant_ssh_pass }}
+ansible_ssh_port=2222
+ansible_python_interpreter=/usr/bin/python3
